@@ -14,7 +14,7 @@ WORKDIR /workspace
 # Pythonパッケージのインストール（必要に応じてpoetryやpip）
 RUN pip install --no-cache-dir \
     numpy \
-    opencv-python \
+    opencv-python-headless \
     torch \
     torchvision \
     matplotlib \

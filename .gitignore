@@ -8,3 +8,11 @@ venv/
 # ローカルのベクトルDB・モデルキャッシュ
 *.duckdb
 .cache/
+
+images/
+
+# macOS
+.DS_Store
+
+# スクリプトの生成物
+output/
