@@ -7,7 +7,7 @@ PoC: 車体シルエットの外接矩形と黄金比グリッドを描画する
 import sys
 from pathlib import Path
 
-import cv2
+import cv2 # opencvのこと
 import numpy as np
 
 GOLDEN_RATIO = 1.618
@@ -31,10 +31,11 @@ def segment_car(img: np.ndarray) -> np.ndarray:
 
     cv2.grabCut(img, mask, rect, bgd_model, fgd_model, 5, cv2.GC_INIT_WITH_RECT)
 
+    # car_maskは元々の画像と同じ大きさの2次元配列で、0or1。1が"背景でない" 0が"背景"
     car_mask = np.where((mask == cv2.GC_FGD) | (mask == cv2.GC_PR_FGD), 1, 0).astype("uint8")
     return car_mask
 
-
+# Contour...輪郭
 def largest_contour_bbox(mask: np.ndarray) -> tuple[int, int, int, int]:
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     if not contours:
@@ -70,10 +71,14 @@ def main() -> None:
     if img is None:
         raise FileNotFoundError(f"画像を読み込めませんでした: {src_path}")
 
+    # 画像を前景(1), 背景(0)の行列に変換する。
     car_mask = segment_car(img)
+    # 0,1の行列から、一番大きい1の塊を探して、左上の座標(x,y)と幅高さを返す。コレが車判定の大きさ
     x, y, w, h = largest_contour_bbox(car_mask)
 
+    # 車の縦横比
     ratio = w / h
+    # 黄金比からどれくらいずれているか
     deviation = (ratio - GOLDEN_RATIO) / GOLDEN_RATIO * 100
 
     annotated = img.copy()
