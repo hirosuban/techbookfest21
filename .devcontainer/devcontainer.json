@@ -1,0 +1,21 @@
+{
+  "name": "Local Container",
+  "build": { "dockerfile": "Dockerfile" },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-toolsai.jupyter",
+        "anthropic.claude-code",
+        "eamodio.gitlens"
+      ]
+    }
+  },
+  "mounts": [
+    "source=claude-code-volume,target=/root/.claude,type=volume"
+  ],
+  "containerEnv": {
+    "CLAUDE_CONFIG_DIR": "/root/.claude"
+  },
+  "postCreateCommand": "git config --system --add safe.directory '*' && ln -sf /root/.claude/.claude.json /root/.claude.json && pip install -r requirements.txt"
+}
