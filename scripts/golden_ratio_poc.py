@@ -5,6 +5,7 @@ PoC: 車体シルエットの外接矩形と黄金比グリッドを描画する
     python scripts/golden_ratio_poc.py images/3.jpeg
 """
 import sys
+from datetime import datetime
 from pathlib import Path
 
 import cv2 # opencvのこと
@@ -86,7 +87,8 @@ def main() -> None:
 
     out_dir = Path("output")
     out_dir.mkdir(exist_ok=True)
-    out_path = out_dir / f"{src_path.stem}_annotated.jpg"
+    timestamp = datetime.now().strftime("%Y%m%d%H%M")
+    out_path = out_dir / f"{src_path.stem}_annotated_{timestamp}.jpg"
     cv2.imwrite(str(out_path), annotated)
 
     print(f"外接矩形: x={x}, y={y}, w={w}, h={h}")
