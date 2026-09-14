@@ -14,3 +14,9 @@ Pythonの画像解析（OpenCV/Pillow）で愛車のサイドビュー写真か�
 
 スクリプトの出力ファイルは日付ごとのディレクトリ（`output/YYYY-MM-DD/`）に分け、その日のログと
 対応付けること。詳細・命名規則は [README.md](README.md) を参照。
+
+## スクリプト変更ログ
+
+`scripts/` 配下のスクリプトを変更したときは、後から（特に執筆期間中に）変更の意図・内容を
+追えるように、コミットメッセージに背景と変更内容を書くこと。ルールの詳細・フォーマットは
+[docs/script_change_log_rules.md](docs/script_change_log_rules.md) を参照。
