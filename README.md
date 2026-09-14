@@ -15,10 +15,19 @@ python scripts/golden_ratio_poc.py <image_path> [grabcut|dl]
 - `dl`（デフォルト）: 学習済みセグメンテーションモデル（DeepLabV3）で車体を抽出
 - `grabcut`: OpenCVのGrabCutのみで車体を抽出（比較用に残している旧実装）
 
+```
+python scripts/roofline_fourier_poc.py <image_path> [grabcut|dl] [harmonics_csv]
+```
+
+車体シルエットのルーフライン（上端の曲線）を1次元の `y = f(x)` として切り出し、フーリエ級数（sin/cos）
+で近似・再構成するPoC。`harmonics_csv`（例: `1,3,5,10,20`）で、何項まで残して再構成するかを指定できる
+（省略時は `1,3,5,10,20`）。元曲線と再構成曲線の重ね書き、パワースペクトラムを1枚の画像に出力する。
+車体セグメンテーションは `golden_ratio_poc.py` の実装を再利用している。
+
 ## 出力ファイルの運用ルール
 
-`scripts/golden_ratio_poc.py` の出力画像は `output/YYYY-MM-DD/` に、実行した日付ごとのディレクトリに
-分けて保存される（ファイル名は `<元画像名>_<method>_annotated_<HHMM>.jpg`）。
+各PoCスクリプトの出力画像は `output/YYYY-MM-DD/` に、実行した日付ごとのディレクトリに
+分けて保存される（ファイル名は `<元画像名>_<method>_<種別>_<HHMM>.{jpg,png}`）。
 
 これは [logs/YYYY-MM-DD.md](logs) の研究ログと日付で対応させるためのルール。
 「いつの実行結果か」をログと突き合わせて追えるように、必ず `output/YYYY-MM-DD/` の形式を保つこと。
