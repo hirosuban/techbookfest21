@@ -16,6 +16,15 @@ python scripts/golden_ratio_poc.py <image_path> [grabcut|dl]
 - `grabcut`: OpenCVのGrabCutのみで車体を抽出（比較用に残している旧実装）
 
 ```
+python scripts/roofline_detection_poc.py <image_path> [grabcut|dl]
+```
+
+車体シルエットのルーフライン（上端の曲線）を検出し、元画像にそのまま重ね描きするだけのPoC。
+フーリエ近似（下記 `roofline_fourier_poc.py`）に進む前段として、まず検出結果そのものを確認するための
+ステップとして分けている。ルーフライン抽出のロジックは `roofline_fourier_poc.py` の
+`extract_roofline()` を再利用している。
+
+```
 python scripts/roofline_fourier_poc.py <image_path> [grabcut|dl] [harmonics_csv]
 ```
 
