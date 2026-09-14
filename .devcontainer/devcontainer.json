@@ -18,5 +18,5 @@
     "CLAUDE_CONFIG_DIR": "/root/.claude",
     "TZ": "Asia/Tokyo"
   },
-  "postCreateCommand": "git config --system --add safe.directory '*' && ln -sf /root/.claude/.claude.json /root/.claude.json && pip install -r requirements.txt"
+  "postCreateCommand": "git config --system --add safe.directory '*' && git config commit.template .gitmessage && ln -sf /root/.claude/.claude.json /root/.claude.json && pip install -r requirements.txt"
 }

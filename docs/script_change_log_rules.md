@@ -16,26 +16,10 @@
 
 ## コミットメッセージのフォーマット
 
-1行目に変更内容のサマリを書き、本文に「背景（なぜ変更したか）」と「変更内容（何を
-どう変えたか）」を分けて書く。
-
-```
-<変更内容のサマリ（1行）>
-
-背景: なぜこの変更が必要だったか（うまくいかなかった点、次に試したいことなど）
-変更: 具体的に何を変えたか（アルゴリズム・パラメータ・入出力仕様の変更点など）
-```
-
-例:
-
-```
-GrabCutからDeepLabV3ベースのセグメンテーションに切り替え
-
-背景: GrabCutは背景と車体のコントラストが低い写真で誤検出が多く、
-      黄金比の算出精度に影響していた。
-変更: 学習済みDeepLabV3で車体マスクを抽出する`dl`モードを追加し、
-      デフォルトの抽出方式とした。従来のGrabCut実装は`grabcut`モードとして残した。
-```
+リポジトリの commit template（[.gitmessage](../.gitmessage)、Conventional Commits
+ベース）に従う。`git commit` 時にひな形が自動で挿入される（devcontainer では
+postCreateCommand で `git config commit.template .gitmessage` が設定済み。手動で
+設定する場合は `git config commit.template .gitmessage` を実行する）。
 
 ## 研究ログとの関係
 
