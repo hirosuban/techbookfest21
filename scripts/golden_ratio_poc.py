@@ -127,10 +127,12 @@ def main() -> None:
     annotated = img.copy()
     draw_golden_grid(annotated, (x, y, w, h))
 
-    out_dir = Path("output")
-    out_dir.mkdir(exist_ok=True)
-    timestamp = datetime.now().strftime("%Y%m%d%H%M")
-    out_path = out_dir / f"{src_path.stem}_{method}_annotated_{timestamp}.jpg"
+    now = datetime.now()
+    # logs/YYYY-MM-DD.md と対応付けられるよう、出力先も日付ごとのディレクトリに分ける
+    out_dir = Path("output") / now.strftime("%Y-%m-%d")
+    out_dir.mkdir(parents=True, exist_ok=True)
+    time_str = now.strftime("%H%M")
+    out_path = out_dir / f"{src_path.stem}_{method}_annotated_{time_str}.jpg"
     cv2.imwrite(str(out_path), annotated)
 
     print(f"外接矩形: x={x}, y={y}, w={w}, h={h}")

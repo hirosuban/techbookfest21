@@ -11,3 +11,6 @@ Pythonの画像解析（OpenCV/Pillow）で愛車のサイドビュー写真か�
 
 作業ログの運用ルール（フォーマット・書き方・粒度）は [docs/research_log_rules.md](docs/research_log_rules.md)
 にまとめてある。実質的な作業をした日は、このルールに従って `logs/YYYY-MM-DD.md` にログを残すこと。
+
+スクリプトの出力ファイルは日付ごとのディレクトリ（`output/YYYY-MM-DD/`）に分け、その日のログと
+対応付けること。詳細・命名規則は [README.md](README.md) を参照。
