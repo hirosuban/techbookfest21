@@ -27,7 +27,7 @@ import matplotlib.pyplot as plt
 
 from golden_ratio_poc import largest_contour_bbox, segment_car_dl, segment_car_grabcut
 
-DEFAULT_HARMONICS = (1, 3, 5, 10, 20)
+DEFAULT_HARMONICS = (1, 3, 5, 10, 20, 50, 100)
 
 
 def extract_roofline(mask: np.ndarray, bbox: tuple[int, int, int, int]) -> np.ndarray:
