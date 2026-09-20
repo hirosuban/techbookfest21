@@ -92,9 +92,13 @@ def main() -> None:
     # 項数ごとに別パネルに分ける(1枚に全項数を重ねると線が重なって見分けづらいため)
     ncols = min(len(harmonics), 3)
     nrows_curves = -(-len(harmonics) // ncols)  # 切り上げ除算
-    fig = plt.figure(figsize=(5 * ncols, 4 * nrows_curves + 4))
-    gs = fig.add_gridspec(nrows_curves + 1, ncols, height_ratios=[3] * nrows_curves + [2])
+    table_height_ratio = 0.45 * (len(harmonics) + 1)  # 表の行数(ヘッダ含む)に応じて高さを確保
+    fig = plt.figure(figsize=(5 * ncols, 4 * nrows_curves + 4 + table_height_ratio))
+    gs = fig.add_gridspec(
+        nrows_curves + 2, ncols, height_ratios=[3] * nrows_curves + [2, table_height_ratio]
+    )
 
+    stats = []  # (項数, RMSE, 累積エネルギー比) をパネル描画時にまとめて計算し、表・標準出力の両方で使い回す
     for i, n in enumerate(harmonics):
         row, col = divmod(i, ncols)
         ax = fig.add_subplot(gs[row, col])
@@ -109,6 +113,10 @@ def main() -> None:
         ax.axis("off")
         ax.legend(fontsize=7, loc="upper right", framealpha=0.9)
 
+        rmse = np.sqrt(np.mean((roofline - recon) ** 2))
+        energy_ratio = power[: n + 1].sum() / total_energy * 100
+        stats.append((n, rmse, energy_ratio))
+
     ax_spectrum = fig.add_subplot(gs[nrows_curves, :])
     ax_spectrum.plot(power, color="black")
     ax_spectrum.set_yscale("log")
@@ -116,8 +124,21 @@ def main() -> None:
     ax_spectrum.set_xlabel("harmonic index")
     ax_spectrum.set_ylabel("|coefficient|^2 (log)")
 
+    # 画像を見返しただけでも各項数のRMSE・累積エネルギー比が分かるよう、表として埋め込む
+    ax_table = fig.add_subplot(gs[nrows_curves + 1, :])
+    ax_table.axis("off")
+    table = ax_table.table(
+        cellText=[[str(n), f"{rmse:.2f}", f"{energy_ratio:.1f}%"] for n, rmse, energy_ratio in stats],
+        colLabels=["harmonics", "RMSE (px)", "cumulative energy"],
+        loc="center",
+        cellLoc="center",
+    )
+    table.auto_set_font_size(False)
+    table.set_fontsize(10)
+    table.scale(1, 1.6)
+
     fig.suptitle(f"{src_path.name} ({method}): roofline Fourier approximation")
-    fig.tight_layout()
+    fig.tight_layout(rect=(0, 0, 1, 0.97))  # suptitleとパネル見出しが重ならないよう上に余白を確保
 
     now = datetime.now()
     # logs/YYYY-MM-DD.md と対応付けられるよう、出力先も日付ごとのディレクトリに分ける
@@ -129,10 +150,7 @@ def main() -> None:
     plt.close(fig)
 
     print(f"ルーフライン点数: {len(roofline)}")
-    for n in harmonics:
-        recon = reconstruct_with_harmonics(roofline, n)
-        rmse = np.sqrt(np.mean((roofline - recon) ** 2))
-        energy_ratio = power[: n + 1].sum() / total_energy * 100
+    for n, rmse, energy_ratio in stats:
         print(f"  {n:>3}項: RMSE={rmse:6.2f}px, 累積エネルギー比={energy_ratio:5.1f}%")
     print(f"出力: {out_path}")
 
