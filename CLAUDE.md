@@ -20,3 +20,8 @@ Pythonの画像解析（OpenCV/Pillow）で愛車のサイドビュー写真か�
 `scripts/` 配下のスクリプトを変更したときは、後から（特に執筆期間中に）変更の意図・内容を
 追えるように、コミットメッセージに背景と変更内容を書くこと。ルールの詳細・フォーマットは
 [docs/script_change_log_rules.md](docs/script_change_log_rules.md) を参照。
+
+## Claudeの作業方針
+
+研究ログへの追記のような低リスクな作業は、ユーザーに確認を取らずそのまま進めること。
+詳細・対象範囲は [docs/agent_working_rules.md](docs/agent_working_rules.md) を参照。
