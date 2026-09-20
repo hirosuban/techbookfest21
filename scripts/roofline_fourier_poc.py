@@ -85,32 +85,38 @@ def main() -> None:
     power = np.abs(spectrum) ** 2
     total_energy = power.sum()
 
-    fig, (ax_curve, ax_spectrum) = plt.subplots(
-        2, 1, figsize=(10, 10), gridspec_kw={"height_ratios": [2, 1]}
-    )
-
     # 元画像の上に、抽出したルーフラインと再構成曲線をそのまま重ねて描く
     rgb_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     outline = [pe.Stroke(linewidth=5, foreground="black"), pe.Normal()]  # 車体の色に埋もれないよう黒縁取りを付ける
 
-    ax_curve.imshow(rgb_img)
-    ax_curve.plot(
-        xs, bbox_y + roofline, color="yellow", linestyle="--", linewidth=2.5,
-        label="original roofline", path_effects=outline, zorder=5,
-    )
-    for n in harmonics:
-        recon = reconstruct_with_harmonics(roofline, n)
-        ax_curve.plot(xs, bbox_y + recon, linewidth=2.5, path_effects=outline, label=f"{n} harmonics")
-    ax_curve.set_title(f"{src_path.name} ({method}): roofline Fourier approximation")
-    ax_curve.axis("off")
-    ax_curve.legend(fontsize=9, loc="upper right", framealpha=0.9)
+    # 項数ごとに別パネルに分ける(1枚に全項数を重ねると線が重なって見分けづらいため)
+    ncols = min(len(harmonics), 3)
+    nrows_curves = -(-len(harmonics) // ncols)  # 切り上げ除算
+    fig = plt.figure(figsize=(5 * ncols, 4 * nrows_curves + 4))
+    gs = fig.add_gridspec(nrows_curves + 1, ncols, height_ratios=[3] * nrows_curves + [2])
 
+    for i, n in enumerate(harmonics):
+        row, col = divmod(i, ncols)
+        ax = fig.add_subplot(gs[row, col])
+        ax.imshow(rgb_img)
+        ax.plot(
+            xs, bbox_y + roofline, color="yellow", linestyle="--", linewidth=2,
+            path_effects=outline, label="original", zorder=5,
+        )
+        recon = reconstruct_with_harmonics(roofline, n)
+        ax.plot(xs, bbox_y + recon, color="red", linewidth=2, path_effects=outline, label=f"{n} harmonics")
+        ax.set_title(f"{n} harmonics")
+        ax.axis("off")
+        ax.legend(fontsize=7, loc="upper right", framealpha=0.9)
+
+    ax_spectrum = fig.add_subplot(gs[nrows_curves, :])
     ax_spectrum.plot(power, color="black")
     ax_spectrum.set_yscale("log")
     ax_spectrum.set_title("power spectrum (energy per harmonic)")
     ax_spectrum.set_xlabel("harmonic index")
     ax_spectrum.set_ylabel("|coefficient|^2 (log)")
 
+    fig.suptitle(f"{src_path.name} ({method}): roofline Fourier approximation")
     fig.tight_layout()
 
     now = datetime.now()
