@@ -34,7 +34,7 @@ import numpy as np
 matplotlib.use("Agg")  # devcontainerはヘッドレスなのでファイル出力のみのバックエンドにする
 import matplotlib.patheffects as pe
 import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation, PillowWriter
+from PIL import Image
 
 from golden_ratio_poc import largest_contour, segment_car_dl, segment_car_grabcut
 
@@ -43,6 +43,9 @@ DEFAULT_N_HARMONICS = 50  # 使う歯車(円)の数
 DEFAULT_N_FRAMES = 180  # アニメーションのコマ数(1周分)
 MAX_BACKDROP_WIDTH = 900  # アニメ背景の最大幅(px)。元画像は4000px超あるため軽量化のため縮小する
 FPS = 30
+FIG_WIDTH_INCH = 7.2  # dpi=100で720px幅。Xへ投稿する用途も考えて800pxから少し縮める
+GIF_PALETTE_COLORS = 128  # 全コマ共通のパレット色数
+TITLE_AREA = 0.06  # 図の上端に確保するタイトル領域の割合
 
 
 def resample_contour(contour: np.ndarray, n_points: int) -> np.ndarray:
@@ -75,6 +78,36 @@ def reconstruct(freqs: np.ndarray, coeffs: np.ndarray, t: np.ndarray) -> np.ndar
     # t: (T,), freqs/coeffs: (K,) -> (T, K)の外積を作って足し合わせる
     phase = np.outer(t, freqs)
     return (coeffs[np.newaxis, :] * np.exp(1j * phase)).sum(axis=1)
+
+
+def save_gif_compact(fig, update, n_frames: int, out_path: Path) -> None:
+    """全コマを描画し、共通パレット・ディザなしで量子化してGIFに保存する。
+
+    matplotlibのPillowWriterだとコマごとに別パレット+ディザがかかり、背景写真のノイズが
+    毎コマ変わるため差分圧縮が効かず35MB前後になっていた。全コマで同じパレットを使い
+    ディザを切ると、背景は毎コマ同一のピクセルになり、Pillowの差分保存で大幅に小さくなる。
+    """
+    rgb_frames = []
+    for frame in range(n_frames):
+        update(frame)
+        fig.canvas.draw()
+        rgb_frames.append(np.asarray(fig.canvas.buffer_rgba())[..., :3].copy())
+
+    # 軌跡・歯車が最も多く描かれる最終コマから共通パレットを作る
+    palette_img = Image.fromarray(rgb_frames[-1]).quantize(
+        colors=GIF_PALETTE_COLORS, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE
+    )
+    quantized = [
+        Image.fromarray(f).quantize(palette=palette_img, dither=Image.Dither.NONE) for f in rgb_frames
+    ]
+    quantized[0].save(
+        out_path,
+        save_all=True,
+        append_images=quantized[1:],
+        duration=round(1000 / FPS),
+        loop=0,
+        optimize=True,
+    )
 
 
 def main() -> None:
@@ -113,7 +146,10 @@ def main() -> None:
     recon_samples = reconstruct(freqs, coeffs, t_samples)
     rmse = np.sqrt(np.mean(np.abs(z - recon_samples) ** 2)) / scale  # 元画像のpxスケールに戻す
 
-    fig, ax = plt.subplots(figsize=(8, 8 * rgb_img.shape[0] / rgb_img.shape[1]))
+    # 余白を詰めて、画像+タイトルだけの図にする(白い余白もGIFサイズを増やすため)
+    fig_height = FIG_WIDTH_INCH * rgb_img.shape[0] / rgb_img.shape[1] / (1 - TITLE_AREA)
+    fig = plt.figure(figsize=(FIG_WIDTH_INCH, fig_height), dpi=100)
+    ax = fig.add_axes((0, 0, 1, 1 - TITLE_AREA))
     ax.imshow(rgb_img)
     ax.axis("off")
     ax.set_title(f"{src_path.name} ({method}): epicycles (n={n_harmonics})")
@@ -164,15 +200,13 @@ def main() -> None:
 
         return [*circles, arm_line, trail_line, tip_dot]
 
-    anim = FuncAnimation(fig, update, frames=n_frames, blit=False)
-
     now = datetime.now()
     # logs/YYYY-MM-DD.md と対応付けられるよう、出力先も日付ごとのディレクトリに分ける
     out_dir = Path("output") / now.strftime("%Y-%m-%d")
     out_dir.mkdir(parents=True, exist_ok=True)
     time_str = now.strftime("%H%M")
     out_path = out_dir / f"{src_path.stem}_{method}_epicycle_{time_str}.gif"
-    anim.save(out_path, writer=PillowWriter(fps=FPS))
+    save_gif_compact(fig, update, n_frames, out_path)
     plt.close(fig)
 
     print(f"輪郭点数(元): {len(contour)}, 再サンプリング後: {N_SAMPLES}")
