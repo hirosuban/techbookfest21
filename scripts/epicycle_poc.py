@@ -14,7 +14,8 @@ roofline_fourier_poc.py はルーフライン(輪郭の上端)を y=f(x) の1価
     2. マスクの外周輪郭(cv2.findContours)を弧長に沿って等間隔にM点へ再サンプリングし、
        複素数列 z = x + i*y を作る
     3. np.fft.fft(z) で複素フーリエ係数を求め、周波数の絶対値が小さい順
-       (0, 1, -1, 2, -2, ...)にn_harmonics個だけ残す
+       (0, 1, -1, 2, -2, ...)にn_harmonics個だけ残す。k=0は輪郭の重心(回転しない)なので
+       歯車としては描かず、歯車の鎖の起点(重心)として使う
     4. 各項を鎖状につないだ歯車(円)として、時刻tごとの位置をアニメーションさせ、
        先端が描いた軌跡を元画像に重ねてGIFとして保存する
 
@@ -123,9 +124,12 @@ def main() -> None:
     ax.plot(orig_x, orig_y, color="yellow", linestyle="--", linewidth=1.3, alpha=0.7,
              path_effects=outline, zorder=2, label="original contour")
 
+    # k=0(直流成分)は回転しない=輪郭の重心そのものなので、歯車としては描かない。
+    # 描くと原点を中心に半径|c_0|(重心の画像内座標≒数百px)の巨大な円が画面外まで出てしまう。
+    # 代わりに、歯車の鎖はk=0の位置(重心)から始める。
     circles = [
         plt.Circle((0, 0), 0, fill=False, edgecolor="deepskyblue", linewidth=0.8, alpha=0.6)
-        for _ in range(n_harmonics)
+        for _ in range(n_harmonics - 1)
     ]
     for circle in circles:
         ax.add_patch(circle)
@@ -136,20 +140,20 @@ def main() -> None:
 
     trail_x: list[float] = []
     trail_y: list[float] = []
-    radii = np.abs(coeffs)
+    radii = np.abs(coeffs)[1:]  # k=0を除く(freqs[0]==0。compute_epicyclesは必ず先頭にk=0を返す)
 
     def update(frame: int):
         t = 2 * np.pi * frame / n_frames
         vectors = coeffs * np.exp(1j * freqs * t)
         positions = np.cumsum(vectors)
-        centers = np.concatenate([[0j], positions[:-1]])
+        centers = positions[:-1]  # centers[0]=重心(k=0の位置)。k=1以降の歯車の中心になる
 
         for circle, center, r in zip(circles, centers, radii):
             circle.center = (center.real, center.imag)
             circle.set_radius(r)
 
-        arm_x = np.append(centers.real, positions[-1].real)
-        arm_y = np.append(centers.imag, positions[-1].imag)
+        arm_x = positions.real
+        arm_y = positions.imag
         arm_line.set_data(arm_x, arm_y)
 
         tip = positions[-1]
