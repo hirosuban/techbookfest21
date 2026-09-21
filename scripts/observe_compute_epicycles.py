@@ -94,48 +94,66 @@ out_dir = Path(__file__).parent.parent / "output" / now.strftime("%Y-%m-%d")
 out_dir.mkdir(parents=True, exist_ok=True)
 time_str = now.strftime("%H%M")
 
-# --- 可視化1: 入力データz(t)そのもの。複素平面上の形(花びら形)と、tに対する時間断面(実部/虚部) ---
-fig1, (ax_shape, ax_time) = plt.subplots(1, 2, figsize=(11, 4.5))
+# --- 可視化: input(形・t断面・成分分解)とoutput(周波数選択の結果)を1枚にまとめる ---
+# 滑らかな曲線として見せるための密なt(FFTには使わない、表示専用)
+t_dense = np.linspace(0, 2 * np.pi, 400)
+term1_dense = np.exp(1j * 1 * t_dense)        # k=1成分: cos(t) + i sin(t)
+term4_dense = 0.4 * np.exp(1j * 4 * t_dense)  # k=4成分: 0.4cos(4t) + i*0.4sin(4t)
+z_dense = term1_dense + term4_dense
 
-ax_shape.plot(np.append(z.real, z.real[0]), np.append(z.imag, z.imag[0]), "o-", color="tab:blue")
+fig, axes = plt.subplots(2, 2, figsize=(12, 9))
+ax_shape, ax_freq, ax_x, ax_y = axes[0, 0], axes[0, 1], axes[1, 0], axes[1, 1]
+
+# [input] 複素平面上の形(花びら形)。n=16点(実際にFFTに使うサンプル)と、参考用の滑らかな輪郭を重ねる
+ax_shape.plot(z_dense.real, z_dense.imag, "-", color="lightsteelblue", linewidth=1, label="連続曲線(参考)")
+ax_shape.plot(np.append(z.real, z.real[0]), np.append(z.imag, z.imag[0]), "o-", color="tab:blue",
+              label="n=16点(実際の入力)")
 for i, zi in enumerate(z):
     ax_shape.annotate(str(i), (zi.real, zi.imag), textcoords="offset points", xytext=(4, 4), fontsize=7)
-ax_shape.set_title("z = x + iy (complex plane)")
+ax_shape.set_title("[input] z = x + iy (complex plane)")
 ax_shape.set_xlabel("Re(z) = x")
 ax_shape.set_ylabel("Im(z) = y")
 ax_shape.set_aspect("equal")
 ax_shape.axhline(0, color="gray", linewidth=0.5)
 ax_shape.axvline(0, color="gray", linewidth=0.5)
+ax_shape.legend(fontsize=7)
 
-ax_time.plot(t, z.real, "o-", label="Re(z(t)) = x(t)", color="tab:orange")
-ax_time.plot(t, z.imag, "o-", label="Im(z(t)) = y(t)", color="tab:green")
-ax_time.set_title("z(t) の時間断面(tに対するx, y)")
-ax_time.set_xlabel("t")
-ax_time.set_ylabel("value")
-ax_time.legend(fontsize=8)
-ax_time.axhline(0, color="gray", linewidth=0.5)
+# [input] x(t)の成分分解: cos(t) + 0.4*cos(4t) = x(t)
+ax_x.plot(t_dense, term1_dense.real, "--", color="tab:blue", linewidth=1.3, label="cos(t)")
+ax_x.plot(t_dense, term4_dense.real, "--", color="tab:purple", linewidth=1.3, label="0.4cos(4t)")
+ax_x.plot(t_dense, z_dense.real, "-", color="tab:orange", linewidth=2, label="和 = x(t)")
+ax_x.plot(t, z.real, "o", color="tab:orange", markersize=4)
+ax_x.set_title("[input] x(t) の成分分解 (横軸t)")
+ax_x.set_xlabel("t")
+ax_x.set_ylabel("value")
+ax_x.axhline(0, color="gray", linewidth=0.5)
+ax_x.legend(fontsize=8)
 
-fig1.suptitle("入力データ: z(t) = exp(it) + 0.4*exp(4it)")
-fig1.tight_layout()
-input_path = out_dir / f"compute_epicycles_input_{time_str}.png"
-fig1.savefig(input_path, dpi=150)
-plt.close(fig1)
-print(f"\n入力データのプロットを保存しました: {input_path}")
+# [input] y(t)の成分分解: sin(t) + 0.4*sin(4t) = y(t)
+ax_y.plot(t_dense, term1_dense.imag, "--", color="tab:blue", linewidth=1.3, label="sin(t)")
+ax_y.plot(t_dense, term4_dense.imag, "--", color="tab:purple", linewidth=1.3, label="0.4sin(4t)")
+ax_y.plot(t_dense, z_dense.imag, "-", color="tab:green", linewidth=2, label="和 = y(t)")
+ax_y.plot(t, z.imag, "o", color="tab:green", markersize=4)
+ax_y.set_title("[input] y(t) の成分分解 (横軸t)")
+ax_y.set_xlabel("t")
+ax_y.set_ylabel("value")
+ax_y.axhline(0, color="gray", linewidth=0.5)
+ax_y.legend(fontsize=8)
 
-# --- 可視化2: 周波数を数直線上に並べ、選ばれたものを強調表示 ---
-fig2, ax = plt.subplots(figsize=(9, 4))
+# [output] compute_epicycles()が選んだ周波数(周波数を数直線上に並べ、選ばれたものを強調表示)
 colors = ["crimson" if i in keep else "lightgray" for i in range(n_)]
-ax.bar(freqs_all, np.abs(coeffs_all), color=colors, width=0.5)
-ax.set_xlabel("frequency (k)")
-ax.set_ylabel("|coeff|")
-ax.set_title(f"compute_epicycles(z, n_harmonics={n_harmonics}): selected frequencies (red)")
-ax.axhline(0, color="black", linewidth=0.8)
+ax_freq.bar(freqs_all, np.abs(coeffs_all), color=colors, width=0.5)
+ax_freq.set_xlabel("frequency (k)")
+ax_freq.set_ylabel("|coeff|")
+ax_freq.set_title(f"[output] compute_epicycles(n_harmonics={n_harmonics}): 選ばれた周波数(赤)")
+ax_freq.axhline(0, color="black", linewidth=0.8)
 for k, c in zip(freqs_all, coeffs_all):
-    ax.annotate(f"k={k}", (k, abs(c)), textcoords="offset points", xytext=(0, 5),
-                ha="center", fontsize=8)
+    ax_freq.annotate(f"k={k}", (k, abs(c)), textcoords="offset points", xytext=(0, 5),
+                      ha="center", fontsize=8)
 
-freq_path = out_dir / f"compute_epicycles_observed_{time_str}.png"
-fig2.tight_layout()
-fig2.savefig(freq_path, dpi=150)
-plt.close(fig2)
-print(f"周波数プロットを保存しました: {freq_path}")
+fig.suptitle("input: z(t) = exp(it) + 0.4*exp(4it)  /  output: compute_epicycles()の選択結果")
+fig.tight_layout()
+out_path = out_dir / f"compute_epicycles_observed_{time_str}.png"
+fig.savefig(out_path, dpi=150)
+plt.close(fig)
+print(f"\nプロットを保存しました: {out_path}")
