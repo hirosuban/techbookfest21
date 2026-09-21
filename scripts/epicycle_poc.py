@@ -205,7 +205,7 @@ def main() -> None:
     out_dir = Path("output") / now.strftime("%Y-%m-%d")
     out_dir.mkdir(parents=True, exist_ok=True)
     time_str = now.strftime("%H%M")
-    out_path = out_dir / f"{src_path.stem}_{method}_epicycle_{time_str}.gif"
+    out_path = out_dir / f"{src_path.stem}_{method}_epicycle_n{n_harmonics}_{time_str}.gif"
     save_gif_compact(fig, update, n_frames, out_path)
     plt.close(fig)
 
