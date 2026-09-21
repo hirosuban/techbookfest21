@@ -88,8 +88,42 @@ np.testing.assert_array_equal(real_freqs, freqs_kept)
 np.testing.assert_array_almost_equal(real_coeffs, coeffs_kept)
 print("一致しました。実況した内容は本物のロジックと同じです。")
 
-# --- 可視化: 周波数を数直線上に並べ、選ばれたものを強調表示 ---
-fig, ax = plt.subplots(figsize=(9, 4))
+now = datetime.now()
+# logs/YYYY-MM-DD.md と対応付けられるよう、出力先も日付ごとのディレクトリに分ける(他スクリプトと同じ運用)
+out_dir = Path(__file__).parent.parent / "output" / now.strftime("%Y-%m-%d")
+out_dir.mkdir(parents=True, exist_ok=True)
+time_str = now.strftime("%H%M")
+
+# --- 可視化1: 入力データz(t)そのもの。複素平面上の形(花びら形)と、tに対する時間断面(実部/虚部) ---
+fig1, (ax_shape, ax_time) = plt.subplots(1, 2, figsize=(11, 4.5))
+
+ax_shape.plot(np.append(z.real, z.real[0]), np.append(z.imag, z.imag[0]), "o-", color="tab:blue")
+for i, zi in enumerate(z):
+    ax_shape.annotate(str(i), (zi.real, zi.imag), textcoords="offset points", xytext=(4, 4), fontsize=7)
+ax_shape.set_title("z = x + iy (complex plane)")
+ax_shape.set_xlabel("Re(z) = x")
+ax_shape.set_ylabel("Im(z) = y")
+ax_shape.set_aspect("equal")
+ax_shape.axhline(0, color="gray", linewidth=0.5)
+ax_shape.axvline(0, color="gray", linewidth=0.5)
+
+ax_time.plot(t, z.real, "o-", label="Re(z(t)) = x(t)", color="tab:orange")
+ax_time.plot(t, z.imag, "o-", label="Im(z(t)) = y(t)", color="tab:green")
+ax_time.set_title("z(t) の時間断面(tに対するx, y)")
+ax_time.set_xlabel("t")
+ax_time.set_ylabel("value")
+ax_time.legend(fontsize=8)
+ax_time.axhline(0, color="gray", linewidth=0.5)
+
+fig1.suptitle("入力データ: z(t) = exp(it) + 0.4*exp(4it)")
+fig1.tight_layout()
+input_path = out_dir / f"compute_epicycles_input_{time_str}.png"
+fig1.savefig(input_path, dpi=150)
+plt.close(fig1)
+print(f"\n入力データのプロットを保存しました: {input_path}")
+
+# --- 可視化2: 周波数を数直線上に並べ、選ばれたものを強調表示 ---
+fig2, ax = plt.subplots(figsize=(9, 4))
 colors = ["crimson" if i in keep else "lightgray" for i in range(n_)]
 ax.bar(freqs_all, np.abs(coeffs_all), color=colors, width=0.5)
 ax.set_xlabel("frequency (k)")
@@ -100,12 +134,8 @@ for k, c in zip(freqs_all, coeffs_all):
     ax.annotate(f"k={k}", (k, abs(c)), textcoords="offset points", xytext=(0, 5),
                 ha="center", fontsize=8)
 
-now = datetime.now()
-# logs/YYYY-MM-DD.md と対応付けられるよう、出力先も日付ごとのディレクトリに分ける(他スクリプトと同じ運用)
-out_dir = Path(__file__).parent.parent / "output" / now.strftime("%Y-%m-%d")
-out_dir.mkdir(parents=True, exist_ok=True)
-out_path = out_dir / f"compute_epicycles_observed_{now.strftime('%H%M')}.png"
-fig.tight_layout()
-fig.savefig(out_path, dpi=150)
-plt.close(fig)
-print(f"\nプロットを保存しました: {out_path}")
+freq_path = out_dir / f"compute_epicycles_observed_{time_str}.png"
+fig2.tight_layout()
+fig2.savefig(freq_path, dpi=150)
+plt.close(fig2)
+print(f"周波数プロットを保存しました: {freq_path}")
