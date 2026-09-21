@@ -74,12 +74,16 @@ def segment_car_dl(img: np.ndarray) -> np.ndarray:
 
 
 # Contour...輪郭
-def largest_contour_bbox(mask: np.ndarray) -> tuple[int, int, int, int]:
+def largest_contour(mask: np.ndarray) -> np.ndarray:
+    """マスクの中で一番大きい輪郭を、cv2.findContoursの生の点列(N,1,2)のまま返す。"""
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     if not contours:
         raise RuntimeError("車体らしき輪郭が検出できませんでした")
-    largest = max(contours, key=cv2.contourArea)
-    return cv2.boundingRect(largest)  # x, y, w, h
+    return max(contours, key=cv2.contourArea)
+
+
+def largest_contour_bbox(mask: np.ndarray) -> tuple[int, int, int, int]:
+    return cv2.boundingRect(largest_contour(mask))  # x, y, w, h
 
 
 def draw_golden_grid(img: np.ndarray, bbox: tuple[int, int, int, int]) -> None:
