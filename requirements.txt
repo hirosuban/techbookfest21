@@ -4,3 +4,5 @@ torch
 torchvision
 matplotlib
 jupyter
+yt-dlp
+pypdf
