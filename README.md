@@ -1,12 +1,18 @@
 # techbookfest21
 
-技術書典向けの書籍「コードで読み解く愛車デミオの美学」制作リポジトリ。
-Pythonの画像解析（OpenCV/Pillow/torchvision）で愛車のサイドビュー写真からプロポーション
-（黄金比・グリッド）を算出・可視化する。
+技術書典向けの書籍「デミオを買ったので、カーライフをPythonで分析してみた」制作リポジトリ。
+中古で購入したマツダ デミオの給油・走行距離・維持費を記録し、pandas・SQL（SQLite/DuckDB）・
+matplotlibで分析・可視化する。
 
 企画全体（目的・スケジュール・章立て）は [docs/tech_book_plan.md](docs/tech_book_plan.md) を参照。
 
-## PoCスクリプト
+> 2026-10-04に企画を全面的に乗り換えた。以前は画像解析（OpenCV/Pillow/torchvision）で
+> サイドビュー写真のプロポーションをフーリエ変換・エピサイクル分解する本「コードで読み解く
+> 愛車デミオの美学」を進めていた。以下の「旧企画（画像解析）のPoCスクリプト」は当時の
+> 成果物としてリポジトリに残してあるが、現行企画とは独立したアーカイブ。経緯は
+> [docs/tech_book_plan.md](docs/tech_book_plan.md)冒頭と[logs/2026-10-04.md](logs/2026-10-04.md)を参照。
+
+## 旧企画（画像解析）のPoCスクリプト
 
 ```
 python scripts/golden_ratio_poc.py <image_path> [grabcut|dl]

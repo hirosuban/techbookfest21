@@ -11,6 +11,9 @@ venv/
 
 images/
 
+# 実際のデミオの給油・維持費データ（個人の金額・走行記録のため非公開。images/と同じ扱い）
+data/real/
+
 # macOS
 .DS_Store
 
