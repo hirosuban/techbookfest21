@@ -45,7 +45,6 @@ MAX_BACKDROP_WIDTH = 900  # アニメ背景の最大幅(px)。元画像は4000px
 FPS = 30
 FIG_WIDTH_INCH = 7.2  # dpi=100で720px幅。Xへ投稿する用途も考えて800pxから少し縮める
 GIF_PALETTE_COLORS = 128  # 全コマ共通のパレット色数
-TITLE_AREA = 0.06  # 図の上端に確保するタイトル領域の割合
 
 
 def resample_contour(contour: np.ndarray, n_points: int) -> np.ndarray:
@@ -146,13 +145,12 @@ def main() -> None:
     recon_samples = reconstruct(freqs, coeffs, t_samples)
     rmse = np.sqrt(np.mean(np.abs(z - recon_samples) ** 2)) / scale  # 元画像のpxスケールに戻す
 
-    # 余白を詰めて、画像+タイトルだけの図にする(白い余白もGIFサイズを増やすため)
-    fig_height = FIG_WIDTH_INCH * rgb_img.shape[0] / rgb_img.shape[1] / (1 - TITLE_AREA)
+    # 余白を詰めて、画像だけの図にする(タイトルなし。白い余白もGIFサイズを増やすため)
+    fig_height = FIG_WIDTH_INCH * rgb_img.shape[0] / rgb_img.shape[1]
     fig = plt.figure(figsize=(FIG_WIDTH_INCH, fig_height), dpi=100)
-    ax = fig.add_axes((0, 0, 1, 1 - TITLE_AREA))
+    ax = fig.add_axes((0, 0, 1, 1))
     ax.imshow(rgb_img)
     ax.axis("off")
-    ax.set_title(f"{src_path.name} ({method}): epicycles (n={n_harmonics})")
 
     outline = [pe.Stroke(linewidth=4, foreground="black"), pe.Normal()]  # 車体の色に埋もれないよう黒縁取り
     orig_x = np.append(z.real, z.real[0])
