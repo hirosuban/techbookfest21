@@ -19,3 +19,6 @@ data/real/
 
 # スクリプトの生成物
 output/
+
+# OBD2のログ（個人の走行記録のため非公開）
+obd_log/
