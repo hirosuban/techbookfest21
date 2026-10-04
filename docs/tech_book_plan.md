@@ -3,8 +3,9 @@
 > **2026-10-04 更新：企画を全面的に乗り換えた。** 当初は「コードで読み解く愛車デミオの美学」
 > （画像解析でサイドビュー写真のプロポーションをフーリエ変換・エピサイクル分解する本）を進めて
 > いたが、ChatGPTとの壁打ちから生まれた「カーライフをPythonで分析する」案の方に全面的に
-> 切り替えることにした。旧企画の経緯・PoC（`scripts/golden_ratio_poc.py`、
-> `scripts/roofline_fourier_poc.py`、`scripts/epicycle_poc.py`等）やそれまでの意思決定は
+> 切り替えることにした。旧企画の経緯・PoC（`scripts/archive/golden_ratio_poc.py`、
+> `scripts/archive/roofline_fourier_poc.py`、`scripts/archive/epicycle_poc.py`等、
+> 2026-10-04に`scripts/archive/`へ整理）やそれまでの意思決定は
 > gitの履歴と過去の`logs/`にそのまま残っている。詳しい切り替えの経緯は
 > `logs/2026-10-04.md`を参照。
 

@@ -2,7 +2,7 @@
 PoC: 車体シルエットの外接矩形と黄金比グリッドを描画するスクリプト試作。
 
 使い方:
-    python scripts/golden_ratio_poc.py images/3.jpeg
+    python scripts/archive/golden_ratio_poc.py images/3.jpeg
 """
 import sys
 from datetime import datetime
@@ -105,7 +105,7 @@ def draw_golden_grid(img: np.ndarray, bbox: tuple[int, int, int, int]) -> None:
 
 def main() -> None:
     if len(sys.argv) not in (2, 3):
-        print("Usage: python scripts/golden_ratio_poc.py <image_path> [grabcut|dl]")
+        print("Usage: python scripts/archive/golden_ratio_poc.py <image_path> [grabcut|dl]")
         sys.exit(1)
 
     src_path = Path(sys.argv[1])

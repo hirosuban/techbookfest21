@@ -6,8 +6,8 @@ PoC: 車体シルエットのルーフライン(上端の曲線)を検出し、�
 extract_roofline() をそのまま再利用している。
 
 使い方:
-    python scripts/roofline_detection_poc.py images/3.jpeg
-    python scripts/roofline_detection_poc.py images/3.jpeg grabcut
+    python scripts/archive/roofline_detection_poc.py images/3.jpeg
+    python scripts/archive/roofline_detection_poc.py images/3.jpeg grabcut
 """
 import sys
 from datetime import datetime
@@ -27,7 +27,7 @@ from roofline_fourier_poc import extract_roofline
 
 def main() -> None:
     if len(sys.argv) not in (2, 3):
-        print("Usage: python scripts/roofline_detection_poc.py <image_path> [grabcut|dl]")
+        print("Usage: python scripts/archive/roofline_detection_poc.py <image_path> [grabcut|dl]")
         sys.exit(1)
 
     src_path = Path(sys.argv[1])

@@ -10,8 +10,8 @@ PoC: 車体シルエットのルーフライン(上端の曲線)をフーリエ�
     4. 元の曲線と再構成曲線、パワースペクトラムを重ねて可視化する
 
 使い方:
-    python scripts/roofline_fourier_poc.py images/3.jpeg
-    python scripts/roofline_fourier_poc.py images/3.jpeg grabcut 1,3,5,10,20
+    python scripts/archive/roofline_fourier_poc.py images/3.jpeg
+    python scripts/archive/roofline_fourier_poc.py images/3.jpeg grabcut 1,3,5,10,20
 """
 import sys
 from datetime import datetime
@@ -60,7 +60,7 @@ def reconstruct_with_harmonics(signal: np.ndarray, n_harmonics: int) -> np.ndarr
 
 def main() -> None:
     if len(sys.argv) not in (2, 3, 4):
-        print("Usage: python scripts/roofline_fourier_poc.py <image_path> [grabcut|dl] [harmonics_csv]")
+        print("Usage: python scripts/archive/roofline_fourier_poc.py <image_path> [grabcut|dl] [harmonics_csv]")
         sys.exit(1)
 
     src_path = Path(sys.argv[1])

@@ -7,7 +7,7 @@ compute_epicycles() は「周波数の絶対値が小さい順」に項を選ぶ
 ならない。このスクリプトはその挙動を具体的な数値・グラフで確認するためのもの。
 
 使い方:
-    python scripts/observe_compute_epicycles.py
+    python scripts/archive/observe_compute_epicycles.py
 """
 from datetime import datetime
 from pathlib import Path
@@ -90,7 +90,7 @@ print("一致しました。実況した内容は本物のロジックと同じ�
 
 now = datetime.now()
 # logs/YYYY-MM-DD.md と対応付けられるよう、出力先も日付ごとのディレクトリに分ける(他スクリプトと同じ運用)
-out_dir = Path(__file__).parent.parent / "output" / now.strftime("%Y-%m-%d")
+out_dir = Path(__file__).parent.parent.parent / "output" / now.strftime("%Y-%m-%d")
 out_dir.mkdir(parents=True, exist_ok=True)
 time_str = now.strftime("%H%M")
 

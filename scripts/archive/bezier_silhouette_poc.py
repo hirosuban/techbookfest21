@@ -3,7 +3,7 @@ PoC: 3次ベジェ曲線でマツダ的「ロングノーズ&ファストバッ�
 実写真の解析ではなく、制御点だけから理想形のシルエットを描く生成系のお試し。
 
 使い方:
-    python scripts/bezier_silhouette_poc.py
+    python scripts/archive/bezier_silhouette_poc.py
 """
 from datetime import datetime
 from pathlib import Path

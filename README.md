@@ -12,17 +12,41 @@ matplotlibで分析・可視化する。
 > 成果物としてリポジトリに残してあるが、現行企画とは独立したアーカイブ。経緯は
 > [docs/tech_book_plan.md](docs/tech_book_plan.md)冒頭と[logs/2026-10-04.md](logs/2026-10-04.md)を参照。
 
-## 旧企画（画像解析）のPoCスクリプト
+## 現行企画：OBD2ログ関連スクリプト（`scripts/obd/`）
+
+OBD2アダプター（Veepeak OBDCheck BLE + Car Scanner ELM OBD2）で取得したログ
+（`obd_log/`、個人の走行データのためgitignore対象）を扱うスクリプト群。手順は
+[docs/obd2_csv.md](docs/obd2_csv.md)参照。
 
 ```
-python scripts/golden_ratio_poc.py <image_path> [grabcut|dl]
+python scripts/obd/load_obd_log.py "obd_log/<ログファイル名>.csv"
+```
+
+Car ScannerのCSVをpandas DataFrameとして読み込めることを確認するだけの最小スクリプト。
+
+```
+python scripts/obd/plot_speed_over_time.py "obd_log/<ログファイル名>.csv"
+```
+
+ログから時刻と車速の列を抜き出し、横軸=time・縦軸=speedの折れ線グラフを
+`output/YYYY-MM-DD/`に出力する。日本語ラベルの文字化け対策（`scripts/obd/mpl_ja.py`）を
+利用している。
+
+## 旧企画（画像解析）のPoCスクリプト（`scripts/archive/`）
+
+現行企画（カーライフ分析）とは無関係な、過去の企画「コードで読み解く愛車デミオの美学」の
+PoC。経緯は[docs/tech_book_plan.md](docs/tech_book_plan.md)冒頭と
+[logs/2026-10-04.md](logs/2026-10-04.md)を参照。
+
+```
+python scripts/archive/golden_ratio_poc.py <image_path> [grabcut|dl]
 ```
 
 - `dl`（デフォルト）: 学習済みセグメンテーションモデル（DeepLabV3）で車体を抽出
 - `grabcut`: OpenCVのGrabCutのみで車体を抽出（比較用に残している旧実装）
 
 ```
-python scripts/roofline_detection_poc.py <image_path> [grabcut|dl]
+python scripts/archive/roofline_detection_poc.py <image_path> [grabcut|dl]
 ```
 
 車体シルエットのルーフライン（上端の曲線）を検出し、元画像にそのまま重ね描きするだけのPoC。
@@ -31,7 +55,7 @@ python scripts/roofline_detection_poc.py <image_path> [grabcut|dl]
 `extract_roofline()` を再利用している。
 
 ```
-python scripts/roofline_fourier_poc.py <image_path> [grabcut|dl] [harmonics_csv]
+python scripts/archive/roofline_fourier_poc.py <image_path> [grabcut|dl] [harmonics_csv]
 ```
 
 車体シルエットのルーフライン（上端の曲線）を1次元の `y = f(x)` として切り出し、フーリエ級数（sin/cos）

@@ -2,7 +2,7 @@
 Car Scanner ELM OBD2で出力したCSVログをpandas DataFrameとして読み込むスクリプト。
 
 使い方:
-    python scripts/load_obd_log.py "obd_log/2026-10-04 20-34-30.csv"
+    python scripts/obd/load_obd_log.py "obd_log/2026-10-04 20-34-30.csv"
 """
 import sys
 from pathlib import Path

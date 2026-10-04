@@ -8,7 +8,7 @@ x(t)は完全に元のまま、y(t)だけ各項の角度にphase_shiftを足す
 一切変えていない。
 
 使い方:
-    python scripts/observe_compute_epicycles_phase_shift.py
+    python scripts/archive/observe_compute_epicycles_phase_shift.py
 """
 from datetime import datetime
 from pathlib import Path
@@ -149,7 +149,7 @@ fig.suptitle("位相ずらし版(周波数・振幅は元のまま): x(t)=cos(t)
 fig.tight_layout()
 
 now = datetime.now()
-out_dir = Path(__file__).parent.parent / "output" / now.strftime("%Y-%m-%d")
+out_dir = Path(__file__).parent.parent.parent / "output" / now.strftime("%Y-%m-%d")
 out_dir.mkdir(parents=True, exist_ok=True)
 out_path = out_dir / f"compute_epicycles_phase_shift_{now.strftime('%H%M')}.png"
 fig.savefig(out_path, dpi=150)

@@ -20,8 +20,8 @@ roofline_fourier_poc.py はルーフライン(輪郭の上端)を y=f(x) の1価
        先端が描いた軌跡を元画像に重ねてGIFとして保存する
 
 使い方:
-    python scripts/epicycle_poc.py images/13.jpeg
-    python scripts/epicycle_poc.py images/13.jpeg dl 50 180
+    python scripts/archive/epicycle_poc.py images/13.jpeg
+    python scripts/archive/epicycle_poc.py images/13.jpeg dl 50 180
 """
 import sys
 from datetime import datetime
@@ -111,7 +111,7 @@ def save_gif_compact(fig, update, n_frames: int, out_path: Path) -> None:
 
 def main() -> None:
     if len(sys.argv) not in (2, 3, 4, 5):
-        print("Usage: python scripts/epicycle_poc.py <image_path> [grabcut|dl] [n_harmonics] [n_frames]")
+        print("Usage: python scripts/archive/epicycle_poc.py <image_path> [grabcut|dl] [n_harmonics] [n_frames]")
         sys.exit(1)
 
     src_path = Path(sys.argv[1])
