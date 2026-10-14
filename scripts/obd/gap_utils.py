@@ -23,3 +23,13 @@ def break_on_gaps(time: pd.Series, value: pd.Series, threshold_sec: float = GAP_
         "value": float("nan"),
     })
     return pd.concat([df, inserts]).sort_values("time").reset_index(drop=True)
+
+
+def find_largest_gap_midpoint(time: pd.Series) -> pd.Timestamp:
+    """ログ全体(行単位)で最もログが途切れた箇所を探し、その前後の中間時刻を返す。
+    ログを「欠損の前」「欠損の後」の2区間に分けるための境界として使う。
+    """
+    t = time.sort_values().reset_index(drop=True)
+    gap_sec = t.diff().dt.total_seconds()
+    idx = gap_sec.idxmax()
+    return t.iloc[idx - 1] + (t.iloc[idx] - t.iloc[idx - 1]) / 2

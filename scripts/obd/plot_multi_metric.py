@@ -1,10 +1,12 @@
 """
-OBD2ログから、エンジン回転数・加速・自動車速度・冷却水温度を1枚の画像に
-縦に並べて出力するスクリプト（横軸=timeを共有する小さな多面グラフ）。
+OBD2ログの全指標を1枚の画像に縦に並べて出力するスクリプト（横軸=timeを共有する
+小さな多面グラフ）。
 
-4項目は単位もスケールも異なるため、1つのグラフに重ねず(2軸グラフは作らない)、
-パネルを縦に分けて横軸(time)だけ共有する構成にしている。
-ログが途切れた区間はgap_utils.break_on_gaps()で線を分断する。
+ログ全体で最も大きく途切れた箇所（Bluetooth切断等）を境に「欠損の前」「欠損の後」の
+2つの区間に分け、それぞれ別画像として出力する。指標ごとに単位もスケールも異なるため、
+1つのグラフに重ねず(2軸グラフは作らない)、パネルを縦に分けて横軸(time)だけ共有する
+構成にしている。区間内に残る小さなログの途切れはgap_utils.break_on_gaps()で線を
+分断する。
 
 使い方:
     python scripts/obd/plot_multi_metric.py "obd_log/2026-10-04 20-34-30.csv"
@@ -19,34 +21,47 @@ matplotlib.use("Agg")  # devcontainerはヘッドレスなのでファイル出�
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from gap_utils import break_on_gaps
+from gap_utils import break_on_gaps, find_largest_gap_midpoint
 from load_obd_log import load_obd_log
 from mpl_ja import set_japanese_font
 
 set_japanese_font()
 
-# (列名, パネルのy軸ラベル, dataviz skillのcategorical色)
-METRICS = [
-    ("エンジン回転数 (rpm)", "rpm", "#2a78d6"),       # slot1 blue
-    ("加速 (g)", "accel (g)", "#eb6834"),              # slot2 orange
-    ("自動車速度 (km/h)", "speed (km/h)", "#1baf7a"),  # slot3 aqua
-    ("冷却水温度 (℃)", "coolant (℃)", "#eda100"),      # slot4 yellow
+# dataviz skillのcategorical 8色(固定順)。指標ごとの識別用で、パネル数が8を超えたら
+# 順に繰り返す(パネル同士を比較するための凡例ではないので、使い回しても識別の破綻は無い)。
+CATEGORICAL_COLORS = [
+    "#2a78d6",  # blue
+    "#eb6834",  # orange
+    "#1baf7a",  # aqua
+    "#eda100",  # yellow
+    "#e87ba4",  # magenta
+    "#008300",  # green
+    "#4a3aa7",  # violet
+    "#e34948",  # red
 ]
 
 
-def plot_multi_metric(df: pd.DataFrame, out_path: Path, title: str) -> None:
-    metrics = [m for m in METRICS if m[0] in df.columns]
+def metric_columns(df: pd.DataFrame) -> list[str]:
+    return [c for c in df.columns if c != "time" and not c.startswith("Unnamed")]
 
-    fig, axes = plt.subplots(len(metrics), 1, figsize=(10, 2.2 * len(metrics)), sharex=True)
-    for ax, (column, ylabel, color) in zip(axes, metrics):
-        series_df = df[["time", column]].dropna(subset=[column]).copy()
-        series_df["time"] = pd.to_datetime(series_df["time"], format="%H:%M:%S.%f")
-        plot_df = break_on_gaps(series_df["time"], series_df[column])
 
-        ax.plot(plot_df["time"], plot_df["value"], color=color, linewidth=2, solid_capstyle="round")
-        ax.set_ylabel(ylabel)
+def plot_segment(df: pd.DataFrame, columns: list[str], out_path: Path, title: str) -> None:
+    fig, axes = plt.subplots(len(columns), 1, figsize=(10, 1.1 * len(columns)), sharex=True)
+    for i, column in enumerate(columns):
+        ax = axes[i]
+        color = CATEGORICAL_COLORS[i % len(CATEGORICAL_COLORS)]
+
+        series_df = df[["time", column]].dropna(subset=[column])
+        if series_df.empty:
+            ax.set_yticks([])
+        else:
+            plot_df = break_on_gaps(series_df["time"], series_df[column])
+            ax.plot(plot_df["time"], plot_df["value"], color=color, linewidth=1.5, solid_capstyle="round")
+
+        ax.set_ylabel(column, fontsize=7, rotation=0, ha="right", va="center")
         ax.spines["top"].set_visible(False)
         ax.spines["right"].set_visible(False)
+        ax.tick_params(axis="y", labelsize=6)
 
     axes[-1].set_xlabel("time")
     fig.suptitle(title)
@@ -55,18 +70,26 @@ def plot_multi_metric(df: pd.DataFrame, out_path: Path, title: str) -> None:
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out_path, dpi=150)
+    plt.close(fig)
 
 
 def main() -> None:
     csv_path = Path(sys.argv[1])
     df = load_obd_log(csv_path)
+    df["time"] = pd.to_datetime(df["time"], format="%H:%M:%S.%f")
+
+    columns = metric_columns(df)
+    split_at = find_largest_gap_midpoint(df["time"])
+    before_df = df[df["time"] < split_at]
+    after_df = df[df["time"] >= split_at]
 
     now = datetime.now()
     out_dir = Path("output") / now.strftime("%Y-%m-%d")
-    out_path = out_dir / f"multi_metric_{csv_path.stem}_{now.strftime('%H%M')}.png"
-    plot_multi_metric(df, out_path, title=csv_path.stem)
 
-    print(f"出力: {out_path}")
+    for label, segment_df in [("before_gap", before_df), ("after_gap", after_df)]:
+        out_path = out_dir / f"multi_metric_{csv_path.stem}_{label}_{now.strftime('%H%M')}.png"
+        plot_segment(segment_df, columns, out_path, title=f"{csv_path.stem} ({label})")
+        print(f"出力: {out_path} ({len(segment_df)}行)")
 
 
 if __name__ == "__main__":
