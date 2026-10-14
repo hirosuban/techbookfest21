@@ -4,7 +4,8 @@ OBD2ログ（Car Scanner ELM OBD2のCSV）から、横軸=time・縦軸=自動�
 
 Car ScannerのCSVはPIDごとに更新タイミングが違うため、1行につき値が入っている列は
 ごく一部で、他は空欄になっている（疎な構造）。本スクリプトでは速度列が入っている
-行だけを抜き出してプロットする。
+行だけを抜き出してプロットする。また、ログ自体が途切れた区間（Bluetooth切断等）は
+gap_utils.break_on_gaps()で線を分断し、斜め線で繋いでしまわないようにしている。
 
 使い方:
     python scripts/obd/plot_speed_over_time.py "obd_log/2026-10-04 20-34-30.csv"
@@ -19,6 +20,7 @@ matplotlib.use("Agg")  # devcontainerはヘッドレスなのでファイル出�
 import matplotlib.pyplot as plt
 import pandas as pd
 
+from gap_utils import break_on_gaps
 from load_obd_log import load_obd_log
 from mpl_ja import set_japanese_font
 
@@ -35,10 +37,12 @@ def extract_speed_over_time(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def plot_speed_over_time(speed_df: pd.DataFrame, out_path: Path) -> None:
+    plot_df = break_on_gaps(speed_df["time"], speed_df[SPEED_COLUMN])
+
     fig, ax = plt.subplots(figsize=(10, 4))
     ax.plot(
-        speed_df["time"],
-        speed_df[SPEED_COLUMN],
+        plot_df["time"],
+        plot_df["value"],
         color=LINE_COLOR,
         linewidth=2,
         solid_capstyle="round",
