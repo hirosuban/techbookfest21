@@ -65,6 +65,11 @@ python scripts/archive/roofline_fourier_poc.py <image_path> [grabcut|dl] [harmon
 の表を添えた1枚の画像として出力する（数値もすべて画像内に残るので、後から見返しても数字が追える）。
 車体セグメンテーションは `golden_ratio_poc.py` の実装を再利用している。
 
+## 宣伝用：X自動投稿（`promo/x_autopost/`）
+
+合同誌の宣伝用のGoogle Apps Script。研究用のコードではなく、Pythonの環境とも関係しない。
+詳細は[promo/x_autopost/README.md](promo/x_autopost/README.md)を参照。
+
 ## 出力ファイルの運用ルール
 
 各PoCスクリプトの出力画像は `output/YYYY-MM-DD/` に、実行した日付ごとのディレクトリに

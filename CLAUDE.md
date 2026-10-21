@@ -21,6 +21,12 @@ matplotlibで分析・可視化する。
 [docs/ref_todokeru_kufuu.md](docs/ref_todokeru_kufuu.md)（「届ける工夫」改訂第2版の要約と、
 本書への当てはめメモ）を参照すること。原本のPDFは `参考/` にある。
 
+## 宣伝（研究用ではない）
+
+`promo/` は合同誌の宣伝用で、本の研究用コード（`scripts/`）とは別物。`promo/x_autopost/` は
+Googleスプレッドシートに書いた投稿を@hirosubanから自動投稿するApps Scriptで、仕組み・セットアップ・
+運用は [promo/x_autopost/README.md](promo/x_autopost/README.md) を参照。宣伝の作業は研究ログには書かない。
+
 ## 研究ログ
 
 作業ログの運用ルール（フォーマット・書き方・粒度）は [docs/research_log_rules.md](docs/research_log_rules.md)
